@@ -1,0 +1,21 @@
+# Đề tài : Xây dựng website tìm việc IT
+
+- Chức năng ADMIN :
+  - Quản lý người dùng
+  - Quản lý người tuyển dụng
+  - Quản lý danh mục
+  - Quản lý bài tuyển dụng
+  - Báo cáo thống kê
+  - Cài đặt hệ thống
+- Chức năng người tuyển dụng :
+  - Quản lý đăng tuyển dụng
+  - Ds ứng viên tuyển dụng
+  - Chat RealTime với ứng viên đã tuyển dụng
+- User :
+  - Trang chủ
+  - Danh sách việc làm
+  - Thông tin cá nhân
+  - Danh sách việc làm ứng tuyển
+  - Danh sách việc làm đã lưu
+  - Tìm kiếm nâng cao
+  - Chat RealTime với nhà tuyển dụng

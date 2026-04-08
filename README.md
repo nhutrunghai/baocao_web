@@ -6,9 +6,9 @@
 
 | STT | Họ và tên | MSSV | Vai trò |
 | --- | --- | --- | --- |
-| 1 | Nhữ Trung Hải | Chưa bổ sung | Nhóm trưởng |
-| 2 | Phạm Nguyễn Hưng | Chưa bổ sung | Thành viên |
-| 3 | Nguyễn Trọng An | Chưa bổ sung | Thành viên |
+| 1 | Nhữ Trung Hải | 23810310247 | Nhóm trưởng |
+| 2 | Phạm Nguyễn Hưng | 23810310276 | Thành viên |
+| 3 | Nguyễn Trọng An | 23810310263 | Thành viên |
 
 ## 📘 Tên đề tài
 

@@ -1,0 +1,7 @@
+.venv
+.venv_local
+.cache
+.models
+.local_tmp
+__pycache__
+*.pyc

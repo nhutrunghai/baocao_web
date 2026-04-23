@@ -12,6 +12,10 @@ export interface LoginRqType {
   email: string
   password: string
 }
+export interface AdminLoginRqType {
+  email: string
+  password: string
+}
 export interface RefreshRqType {
   refresh_token: string
 }
@@ -32,4 +36,21 @@ export interface GetUserRqType extends ParamsDictionary {
 export interface newPasswordRqType {
   newPassword: string
   OtpCode: string
+}
+export interface UpdateUserAvatarRqType {
+  avatar: string
+  avatar_file_key: string
+}
+export interface UpdateCompanyLogoRqType {
+  logo: string
+  logo_file_key: string
+}
+export interface ResumeIdParamType extends ParamsDictionary {
+  resumeId: string
+}
+export interface CreateResumeRqType {
+  title: string
+  cv_url: string
+  resume_file_key: string
+  is_default?: boolean
 }

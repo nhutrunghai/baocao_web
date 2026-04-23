@@ -159,6 +159,20 @@
 - [Báo cáo ngày 03/04/2026](./reports/REPORT_20260403.md)
 - [Báo cáo ngày 08/04/2026](./reports/REPORT_20260408.md)
 - [Báo cáo ngày 23/04/2026](./reports/REPORT_20260423.md)
+- [Bao cao dong bo source va bo sung SRS ngay 23/04/2026](./reports/REPORT_20260423_SYNC.md)
+
+## 📚 Bổ sung SRS đợt đồng bộ source 23/04/2026
+
+| Nhóm bổ sung | Tài liệu SRS mới |
+| --- | --- |
+| Xác thực / hồ sơ bổ sung | [OAuth Google](./SRS/SRS_OAUTH_GOOGLE_LOGIN.MD), [Cập nhật avatar](./SRS/SRS_UPDATE_USER_AVATAR.MD), [Danh sách job đã ứng tuyển](./SRS/SRS_GET_MY_APPLIED_JOBS.MD) |
+| Thông báo người dùng | [Danh sách thông báo](./SRS/SRS_GET_NOTIFICATIONS.MD), [Số chưa đọc](./SRS/SRS_GET_UNREAD_NOTIFICATION_COUNT.MD), [Đánh dấu một thông báo đã đọc](./SRS/SRS_MARK_NOTIFICATION_READ.MD), [Đánh dấu tất cả đã đọc](./SRS/SRS_MARK_ALL_NOTIFICATIONS_READ.MD) |
+| Promotion cho nhà tuyển dụng | [Danh sách gói promotion](./SRS/SRS_GET_COMPANY_PROMOTION_PLANS.MD), [Danh sách promotion](./SRS/SRS_GET_COMPANY_JOB_PROMOTIONS.MD), [Chi tiết promotion](./SRS/SRS_GET_COMPANY_JOB_PROMOTION_DETAIL.MD), [Hủy promotion](./SRS/SRS_CANCEL_COMPANY_JOB_PROMOTION.MD), [Mua promotion](./SRS/SRS_PURCHASE_COMPANY_JOB_PROMOTION.MD) |
+| Wallet top-up nâng cao | [Tạo lệnh nạp ví](./SRS/SRS_CREATE_WALLET_TOPUP_ORDER.MD), [Chi tiết lệnh nạp ví](./SRS/SRS_GET_WALLET_TOPUP_ORDER_DETAIL.MD) |
+| Admin user / company mở rộng | [Ví người dùng](./SRS/SRS_ADMIN_GET_USER_WALLET.MD), [Top-up orders người dùng](./SRS/SRS_ADMIN_GET_USER_TOPUP_ORDERS.MD), [Jobs của công ty](./SRS/SRS_ADMIN_GET_COMPANY_JOBS.MD), [Applications của công ty](./SRS/SRS_ADMIN_GET_COMPANY_APPLICATIONS.MD) |
+| Admin job promotions | [Danh sách](./SRS/SRS_ADMIN_GET_JOB_PROMOTIONS.MD), [Tạo mới](./SRS/SRS_ADMIN_CREATE_JOB_PROMOTION.MD), [Sắp xếp lại](./SRS/SRS_ADMIN_REORDER_JOB_PROMOTIONS.MD), [Chi tiết](./SRS/SRS_ADMIN_GET_JOB_PROMOTION_DETAIL.MD), [Cập nhật](./SRS/SRS_ADMIN_UPDATE_JOB_PROMOTION.MD), [Xóa](./SRS/SRS_ADMIN_DELETE_JOB_PROMOTION.MD) |
+| Admin vận hành hệ thống | [Audit logs](./SRS/SRS_ADMIN_GET_AUDIT_LOGS.MD), [SePay config](./SRS/SRS_ADMIN_GET_SEPAY_CONFIG.MD), [Cập nhật SePay](./SRS/SRS_ADMIN_UPDATE_SEPAY_CONFIG.MD), [Rotate SePay secrets](./SRS/SRS_ADMIN_ROTATE_SEPAY_SECRETS.MD), [Test SePay](./SRS/SRS_ADMIN_TEST_SEPAY_CONNECTION.MD), [SePay diagnostics](./SRS/SRS_ADMIN_GET_SEPAY_DIAGNOSTICS.MD) |
+| Admin AI / tài chính | [RAG chat config](./SRS/SRS_ADMIN_GET_RAG_CHAT_CONFIG.MD), [Cập nhật RAG chat](./SRS/SRS_ADMIN_UPDATE_RAG_CHAT_CONFIG.MD), [Rotate RAG secrets](./SRS/SRS_ADMIN_ROTATE_RAG_CHAT_SECRETS.MD), [RAG chat health](./SRS/SRS_ADMIN_GET_RAG_CHAT_HEALTH.MD), [Lịch sử giao dịch ví](./SRS/SRS_ADMIN_GET_WALLET_TRANSACTIONS.MD), [Điều chỉnh ví](./SRS/SRS_ADMIN_ADJUST_WALLET_TRANSACTION.MD) |
 
 ## 🚀 Công nghệ sử dụng
 
@@ -245,7 +259,7 @@ http://localhost:4000
 ### 4. Cài đặt frontend
 
 ```bash
-cd frontend_real
+cd frontend
 npm install
 copy .env.example .env.local
 npm run dev
@@ -263,6 +277,8 @@ Frontend mặc định chạy ở:
 ```text
 http://localhost:5173
 ```
+
+Frontend local hien da co cau hinh proxy `/api` sang `http://localhost:4000` trong `vite.config.js`, nen khi chay dev co the dung cung origin de tranh loi CORS / `Failed to fetch`.
 
 ### 5. Cài đặt embedding API
 

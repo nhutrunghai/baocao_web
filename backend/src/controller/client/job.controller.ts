@@ -2,14 +2,11 @@ import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { StatusCodes } from 'http-status-codes'
 import { ObjectId } from 'mongodb'
-import databaseService from '~/configs/database.config'
-import { JobStatus } from '~/constants/enum'
+import { JobModerationStatus, JobStatus } from '~/constants/enum'
 import UserMessages from '~/constants/messages'
-import { AppError } from '~/models/appError'
-import { CompanyLocals } from '~/models/requests/responseType'
-import Company from '~/models/schema/companies.schema'
-import Job from '~/models/schema/jobs.schena'
-import jobsService from '~/services/job.service'
+import { CompanyLocals, JobLocals } from '~/models/requests/responseType'
+import Job from '~/models/schema/client/jobs.schema'
+import jobsService from '~/services/client/job.service'
 
 export const createCompanyJobController = async (
   req: Request<ParamsDictionary, unknown, Job>,
@@ -32,6 +29,7 @@ export const createCompanyJobController = async (
     skills: req.body.skills,
     quantity: req.body.quantity,
     expired_at: req.body.expired_at,
+    moderation_status: JobModerationStatus.ACTIVE,
     published_at: req.body.status === JobStatus.OPEN ? new Date() : undefined
   })
 
@@ -51,6 +49,7 @@ export const createCompanyJobController = async (
       job_type: newJob.job_type,
       level: newJob.level,
       status: newJob.status,
+      moderation_status: newJob.moderation_status,
       category: newJob.category,
       skills: newJob.skills,
       quantity: newJob.quantity,
@@ -63,7 +62,7 @@ export const createCompanyJobController = async (
 }
 
 export const getCompanyJobsController = async (req: Request, res: Response<unknown, CompanyLocals>) => {
-  const company = res.locals.company as Company
+  const company = res.locals.company as NonNullable<CompanyLocals['company']>
   const page = Number(req.query.page || 1)
   const limit = Number(req.query.limit || 10)
   const status = req.query.status as JobStatus | undefined
@@ -87,6 +86,7 @@ export const getCompanyJobsController = async (req: Request, res: Response<unkno
         job_type: job.job_type,
         level: job.level,
         status: job.status,
+        moderation_status: job.moderation_status,
         quantity: job.quantity,
         expired_at: job.expired_at,
         published_at: job.published_at,
@@ -98,21 +98,11 @@ export const getCompanyJobsController = async (req: Request, res: Response<unkno
   })
 }
 
-export const getCompanyJobDetailController = async (req: Request, res: Response<unknown, CompanyLocals>) => {
-  const company = res.locals.company as Company
-  const jobId = req.params.jobId as string
-
-  const job = await databaseService.jobs.findOne({
-    _id: new ObjectId(jobId),
-    company_id: company._id
-  })
-
-  if (!job) {
-    throw new AppError({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: UserMessages.JOB_NOT_FOUND
-    })
-  }
+export const getCompanyJobDetailController = async (
+  req: Request,
+  res: Response<unknown, CompanyLocals & JobLocals>
+) => {
+  const job = res.locals.job as Job
 
   return res.status(StatusCodes.OK).json({
     status: 'success',
@@ -127,6 +117,7 @@ export const getCompanyJobDetailController = async (req: Request, res: Response<
       job_type: job.job_type,
       level: job.level,
       status: job.status,
+      moderation_status: job.moderation_status,
       category: job.category,
       skills: job.skills,
       quantity: job.quantity,
@@ -140,22 +131,9 @@ export const getCompanyJobDetailController = async (req: Request, res: Response<
 
 export const updateCompanyJobController = async (
   req: Request<ParamsDictionary, unknown, Partial<Job>>,
-  res: Response<unknown, CompanyLocals>
+  res: Response<unknown, CompanyLocals & JobLocals>
 ) => {
-  const company = res.locals.company as Company
-  const jobId = req.params.jobId as string
-
-  const job = await databaseService.jobs.findOne({
-    _id: new ObjectId(jobId),
-    company_id: company._id
-  })
-
-  if (!job) {
-    throw new AppError({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: UserMessages.JOB_NOT_FOUND
-    })
-  }
+  const job = res.locals.job as Job
 
   const payload: Partial<Job> = {
     ...req.body,
@@ -178,6 +156,7 @@ export const updateCompanyJobController = async (
       job_type: updatedJob?.job_type,
       level: updatedJob?.level,
       status: updatedJob?.status,
+      moderation_status: updatedJob?.moderation_status,
       category: updatedJob?.category,
       skills: updatedJob?.skills,
       quantity: updatedJob?.quantity,
@@ -191,22 +170,9 @@ export const updateCompanyJobController = async (
 
 export const updateCompanyJobStatusController = async (
   req: Request<ParamsDictionary, unknown, { status: JobStatus }>,
-  res: Response<unknown, CompanyLocals>
+  res: Response<unknown, CompanyLocals & JobLocals>
 ) => {
-  const company = res.locals.company as Company
-  const jobId = req.params.jobId as string
-
-  const job = await databaseService.jobs.findOne({
-    _id: new ObjectId(jobId),
-    company_id: company._id
-  })
-
-  if (!job) {
-    throw new AppError({
-      statusCode: StatusCodes.NOT_FOUND,
-      message: UserMessages.JOB_NOT_FOUND
-    })
-  }
+  const job = res.locals.job as Job
 
   const payload: Partial<Job> = {
     status: req.body.status,
@@ -226,9 +192,11 @@ export const updateCompanyJobStatusController = async (
       _id: updatedJob?._id,
       title: updatedJob?.title,
       status: updatedJob?.status,
+      moderation_status: updatedJob?.moderation_status,
       published_at: updatedJob?.published_at,
       expired_at: updatedJob?.expired_at,
       updated_at: updatedJob?.updated_at
     }
   })
 }
+

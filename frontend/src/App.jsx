@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { getUserNotificationUnreadCount, subscribeUnreadNotificationCount } from './api/notificationService.js'
 import { getMyProfile } from './api/userService.js'
 import UserAvatar from './components/UserAvatar.jsx'
 import { loadFavoriteIds, loadFeaturedJobs, loadHomeMeta, loadLatestJobs, toggleFavoriteJob } from './data/apiClient.js'
@@ -84,6 +85,7 @@ export default function App() {
   const [bannerOpen, setBannerOpen] = useState(true)
   const [homeMeta, setHomeMeta] = useState(null)
   const [userProfile, setUserProfile] = useState(null)
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0)
   const [typedHeroTitle, setTypedHeroTitle] = useState('')
   const [isLoadingJobs, setIsLoadingJobs] = useState(true)
   const [featuredPagination, setFeaturedPagination] = useState(null)
@@ -96,10 +98,10 @@ export default function App() {
       setIsLoadingJobs(true)
       try {
         const [featuredData, latestData, homeData, ids] = await Promise.all([
-          loadFeaturedJobs({ page: 1, limit: FEATURED_PAGE_LIMIT }),
-          loadLatestJobs({ page: 1, limit: LATEST_PAGE_LIMIT }),
-          loadHomeMeta(),
-          loadFavoriteIds(),
+          loadFeaturedJobs({ page: 1, limit: FEATURED_PAGE_LIMIT }).catch(() => ({ jobs: [], pagination: null })),
+          loadLatestJobs({ page: 1, limit: LATEST_PAGE_LIMIT }).catch(() => ({ jobs: [], pagination: null })),
+          loadHomeMeta().catch(() => null),
+          loadFavoriteIds().catch(() => []),
         ])
         setFeaturedJobs(featuredData?.jobs || [])
         setLatestJobs(latestData?.jobs || [])
@@ -107,8 +109,6 @@ export default function App() {
         setLatestPagination(latestData?.pagination || null)
         setHomeMeta(homeData)
         setFavoriteSet(new Set(ids))
-      } catch (error) {
-        console.error('Failed to load home data', error)
       } finally {
         setIsLoadingJobs(false)
       }
@@ -143,6 +143,34 @@ export default function App() {
 
     return () => {
       active = false
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    let active = true
+
+    if (!isAuthenticated) {
+      setUnreadNotificationCount(0)
+      return () => {
+        active = false
+      }
+    }
+
+    getUserNotificationUnreadCount()
+      .then((count) => {
+        if (active) setUnreadNotificationCount(count)
+      })
+      .catch(() => {
+        if (active) setUnreadNotificationCount(0)
+      })
+
+    const unsubscribe = subscribeUnreadNotificationCount((count) => {
+      setUnreadNotificationCount(count)
+    })
+
+    return () => {
+      active = false
+      unsubscribe()
     }
   }, [isAuthenticated])
 
@@ -296,8 +324,13 @@ export default function App() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               <>
-                <Link to="/notifications" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200">
+                <Link to="/notifications" className="relative flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200">
                   <span className="material-symbols-outlined">notifications</span>
+                  {unreadNotificationCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-sky-500 px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
+                      {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                    </span>
+                  ) : null}
                 </Link>
                 <Link to="/messages" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200">
                   <span className="material-symbols-outlined">chat</span>

@@ -33,15 +33,35 @@ function alignOriginHostname(origin) {
   }
 }
 
+function resolveAbsoluteUrl(value) {
+  if (!value) return ''
+
+  if (typeof window !== 'undefined') {
+    try {
+      return new URL(value, window.location.origin).toString().replace(/\/$/, '')
+    } catch {
+      return value
+    }
+  }
+
+  return value
+}
+
 function resolveApiBaseUrl() {
   const explicitBaseUrl = import.meta.env.VITE_API_BASE_URL
 
   if (explicitBaseUrl) {
-    return stripTrailingSlash(alignOriginHostname(explicitBaseUrl))
+    return stripTrailingSlash(resolveAbsoluteUrl(alignOriginHostname(explicitBaseUrl)))
+  }
+
+  const version = stripOuterSlashes(import.meta.env.VITE_API_VERSION || DEFAULT_API_VERSION)
+
+  // In local Vite dev, prefer same-origin API calls so the dev proxy can avoid CORS failures.
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    return stripTrailingSlash(resolveAbsoluteUrl(`/api/${version}`))
   }
 
   const origin = stripTrailingSlash(alignOriginHostname(import.meta.env.VITE_API_ORIGIN || DEFAULT_API_ORIGIN))
-  const version = stripOuterSlashes(import.meta.env.VITE_API_VERSION || DEFAULT_API_VERSION)
 
   return `${origin}/api/${version}`
 }

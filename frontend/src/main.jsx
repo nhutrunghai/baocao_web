@@ -25,6 +25,7 @@ import AIAgent from './pages/AIAgent.jsx'
 import UserProfileEdit from './pages/UserProfileEdit.jsx'
 import UserPublicProfile from './pages/UserPublicProfile.jsx'
 import UserSettings from './pages/UserSettings.jsx'
+import WalletTopUp from './pages/WalletTopUp.jsx'
 import EmployerOverviewDashboard from './pages/tuyen-dung/EmployerOverviewDashboard.jsx'
 import EmployerCompanyRegistration from './pages/tuyen-dung/EmployerCompanyRegistration.jsx'
 import EmployerRecruitmentDashboard from './pages/tuyen-dung/EmployerRecruitmentDashboard.jsx'
@@ -35,11 +36,18 @@ import EmployerReceivedProfiles from './pages/tuyen-dung/EmployerReceivedProfile
 import EmployerCandidateDetail from './pages/tuyen-dung/EmployerCandidateDetail.jsx'
 import EmployerMessages from './pages/tuyen-dung/EmployerMessages.jsx'
 import EmployerNotifications from './pages/tuyen-dung/EmployerNotifications.jsx'
+import EmployerJobPromotions from './pages/tuyen-dung/EmployerJobPromotions.jsx'
+import EmployerJobPromotionDetail from './pages/tuyen-dung/EmployerJobPromotionDetail.jsx'
 import AdminLogin from './pages/admin/AdminLogin.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
 import AdminCompanies from './pages/admin/AdminCompanies.jsx'
 import AdminJobs from './pages/admin/AdminJobs.jsx'
+import AdminJobPromotions from './pages/admin/AdminJobPromotions.jsx'
+import AdminWalletTransactions from './pages/admin/AdminWalletTransactions.jsx'
+import AdminSePayConfig from './pages/admin/AdminSePayConfig.jsx'
+import AdminRagChatConfig from './pages/admin/AdminRagChatConfig.jsx'
+import AdminAuditLogs from './pages/admin/AdminAuditLogs.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -57,6 +65,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/employer-messages" element={<RequireAuth><RequireEmployerCompany><EmployerMessages /></RequireEmployerCompany></RequireAuth>} />
         <Route path="/employer-notifications" element={<RequireAuth><RequireEmployerCompany><EmployerNotifications /></RequireEmployerCompany></RequireAuth>} />
         <Route path="/employer-milestones" element={<RequireAuth><RequireEmployerCompany><EmployerMilestoneDashboard /></RequireEmployerCompany></RequireAuth>} />
+        <Route path="/employer-job-promotions" element={<RequireAuth><RequireEmployerCompany><EmployerJobPromotions /></RequireEmployerCompany></RequireAuth>} />
+        <Route path="/employer-job-promotions/:promotionId" element={<RequireAuth><RequireEmployerCompany><EmployerJobPromotionDetail /></RequireEmployerCompany></RequireAuth>} />
         <Route path="/job-list" element={<JobDirectory />} />
         <Route path="/jobs" element={<RequireAuth><JobList /></RequireAuth>} />
         <Route path="/contracts" element={<RequireAuth><Contracts /></RequireAuth>} />
@@ -81,12 +91,18 @@ createRoot(document.getElementById('root')).render(
         <Route path="/user/profile/edit" element={<RequireAuth><UserProfileEdit /></RequireAuth>} />
         <Route path="/user/profile/:id" element={<UserPublicProfile />} />
         <Route path="/user/settings" element={<RequireAuth><UserSettings /></RequireAuth>} />
+        <Route path="/wallet/top-up" element={<RequireAuth><WalletTopUp /></RequireAuth>} />
         <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/companies" element={<AdminCompanies />} />
         <Route path="/admin/jobs" element={<AdminJobs />} />
+        <Route path="/admin/job-promotions" element={<AdminJobPromotions />} />
+        <Route path="/admin/wallet-transactions" element={<AdminWalletTransactions />} />
+        <Route path="/admin/sepay-config" element={<AdminSePayConfig />} />
+        <Route path="/admin/rag-chat-config" element={<AdminRagChatConfig />} />
+        <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

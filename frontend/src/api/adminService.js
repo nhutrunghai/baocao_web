@@ -189,3 +189,124 @@ export async function updateAdminJobModerationStatus(jobId, body) {
     },
   })
 }
+
+export async function getAdminJobPromotions(params = {}) {
+  return adminRequest('GET', '/admin/job-promotions', { params })
+}
+
+export async function getAdminJobPromotionDetail(promotionId) {
+  const result = await adminRequest('GET', `/admin/job-promotions/${promotionId}`)
+  return result?.promotion ?? result
+}
+
+export async function createAdminJobPromotion(body) {
+  const result = await adminRequest('POST', '/admin/job-promotions', {
+    data: {
+      jobId: body?.jobId,
+      type: body?.type,
+      status: body?.status,
+      starts_at: body?.starts_at,
+      ends_at: body?.ends_at,
+      priority: body?.priority,
+      amount_paid: body?.amount_paid,
+      currency: body?.currency,
+    },
+  })
+
+  return result?.promotion ?? result
+}
+
+export async function updateAdminJobPromotion(promotionId, body) {
+  const result = await adminRequest('PATCH', `/admin/job-promotions/${promotionId}`, {
+    data: body,
+  })
+
+  return result?.promotion ?? result
+}
+
+export async function deleteAdminJobPromotion(promotionId) {
+  const result = await adminRequest('DELETE', `/admin/job-promotions/${promotionId}`)
+  return result?.promotion ?? result
+}
+
+export async function reorderAdminJobPromotions(items) {
+  return adminRequest('PATCH', '/admin/job-promotions/reorder', {
+    data: {
+      items: Array.isArray(items) ? items : [],
+    },
+  })
+}
+
+export async function getAdminWalletTransactions(params = {}) {
+  return adminRequest('GET', '/admin/wallet-transactions', { params })
+}
+
+export async function adjustAdminWalletBalance(body) {
+  return adminRequest('POST', '/admin/wallet-transactions/adjust', {
+    data: {
+      userId: body?.userId,
+      amount: body?.amount,
+      direction: body?.direction,
+      description: body?.description,
+    },
+  })
+}
+
+export async function getAdminSePayConfig() {
+  return adminRequest('GET', '/admin/sepay/config')
+}
+
+export async function updateAdminSePayConfig(body) {
+  return adminRequest('PATCH', '/admin/sepay/config', {
+    data: {
+      bank_account_id: body?.bank_account_id,
+      bank_short_name: body?.bank_short_name,
+      bank_account_number: body?.bank_account_number,
+      bank_account_holder_name: body?.bank_account_holder_name,
+    },
+  })
+}
+
+export async function rotateAdminSePaySecrets(body) {
+  return adminRequest('PATCH', '/admin/sepay/secrets', {
+    data: {
+      api_token: body?.api_token,
+      webhook_secret: body?.webhook_secret,
+    },
+  })
+}
+
+export async function testAdminSePayConnection() {
+  return adminRequest('POST', '/admin/sepay/test-connection')
+}
+
+export async function getAdminSePayDiagnostics(params = {}) {
+  return adminRequest('GET', '/admin/sepay/diagnostics', { params })
+}
+
+export async function getAdminRagChatConfig() {
+  return adminRequest('GET', '/admin/rag-chat/config')
+}
+
+export async function updateAdminRagChatConfig(body) {
+  return adminRequest('PATCH', '/admin/rag-chat/config', {
+    data: body,
+  })
+}
+
+export async function rotateAdminRagChatSecrets(body) {
+  return adminRequest('PATCH', '/admin/rag-chat/secrets', {
+    data: {
+      openai_api_key: body?.openai_api_key,
+      gemini_api_key: body?.gemini_api_key,
+    },
+  })
+}
+
+export async function getAdminRagChatHealth() {
+  return adminRequest('GET', '/admin/rag-chat/health')
+}
+
+export async function getAdminAuditLogs(params = {}) {
+  return adminRequest('GET', '/admin/audit-logs', { params })
+}

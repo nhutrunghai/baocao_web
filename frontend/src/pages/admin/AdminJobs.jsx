@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AdminLayout from '../../components/AdminLayout.jsx'
 import Toast from '../../components/Toast.jsx'
 import { getAdminJobDetail, getAdminJobs, updateAdminJobModerationStatus } from '../../api/adminService.js'
@@ -28,6 +29,12 @@ const moderationToneMap = {
   active: 'border-emerald-100 bg-emerald-50 text-emerald-700',
   blocked: 'border-rose-200 bg-rose-50 text-rose-700',
 }
+
+const listBadgeClassName =
+  'inline-flex min-h-[38px] w-full items-center justify-center rounded-xl border px-2.5 py-1.5 text-center text-[11px] font-extrabold leading-4 whitespace-normal break-words'
+
+const listActionClassName =
+  'flex min-h-[40px] items-center justify-center rounded-md border px-3.5 py-2.5 text-center text-[11px] font-bold leading-4 whitespace-normal break-words transition'
 
 const jobTypeLabelMap = {
   'full-time': 'Toàn thời gian',
@@ -77,6 +84,14 @@ function formatMoneyRange(salary) {
 function compactId(value) {
   if (!value) return 'Chưa có'
   return `${String(value).slice(0, 7)}...${String(value).slice(-5)}`
+}
+
+function buildPromotionLink(job) {
+  const params = new URLSearchParams()
+  if (job?._id) params.set('jobId', job._id)
+  if (job?.title) params.set('jobTitle', job.title)
+  if (job?.company?.company_name) params.set('companyName', job.company.company_name)
+  return `/admin/job-promotions?${params.toString()}`
 }
 
 function Field({ label, value }) {
@@ -268,7 +283,7 @@ export default function AdminJobs() {
 
       <div className="grid grid-cols-1 gap-3 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="hidden grid-cols-[minmax(0,1.2fr)_170px_110px_115px_96px] bg-slate-50 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400 lg:grid">
+          <div className="hidden grid-cols-[minmax(0,1.2fr)_170px_120px_145px_140px] bg-slate-50 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400 lg:grid">
             <span>Tin tuyển dụng</span>
             <span>Doanh nghiệp</span>
             <span>Tuyển dụng</span>
@@ -288,7 +303,7 @@ export default function AdminJobs() {
                     : isSelected
                       ? 'border-slate-100 bg-indigo-50/60'
                       : 'border-slate-100 hover:bg-slate-50'
-                } lg:grid lg:grid-cols-[minmax(0,1.2fr)_170px_110px_115px_96px] lg:items-center lg:gap-3`}
+                } lg:grid lg:grid-cols-[minmax(0,1.2fr)_170px_120px_145px_140px] lg:items-center lg:gap-3`}
               >
                 <div className="min-w-0">
                   <p className="truncate font-extrabold text-slate-950">{job.title}</p>
@@ -302,16 +317,28 @@ export default function AdminJobs() {
                     <p className="truncate font-bold text-slate-700">{job.company?.company_name || 'Chưa có doanh nghiệp'}</p>
                     <p className="mt-0.5 text-[11px] font-medium text-slate-400">{job.company?.verified ? 'Đã xác minh' : 'Chờ xác minh'}</p>
                   </div>
-                  <span className={`w-fit rounded-full border px-2 py-1 text-[11px] font-extrabold ${jobStatusToneMap[job.status] || jobStatusToneMap.draft}`}>
+                  <span className={`${listBadgeClassName} ${jobStatusToneMap[job.status] || jobStatusToneMap.draft}`}>
                     {jobStatusLabelMap[job.status] || job.status || 'Chưa rõ'}
                   </span>
-                  <span className={`w-fit rounded-full border px-2 py-1 text-[11px] font-extrabold ${moderationToneMap[job.moderation_status] || moderationToneMap.active}`}>
+                  <span className={`${listBadgeClassName} ${moderationToneMap[job.moderation_status] || moderationToneMap.active}`}>
                     {moderationLabelMap[job.moderation_status] || 'Được phép hiển thị'}
                   </span>
                 </div>
-                <button type="button" onClick={() => handleOpenDetail(job._id)} className="mt-3 h-8 w-full rounded-md border border-slate-200 bg-white px-3 text-[12px] font-extrabold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 lg:mt-0 lg:w-auto">
-                  Xem
-                </button>
+                <div className="mt-3 grid grid-cols-2 gap-2 lg:mt-0">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenDetail(job._id)}
+                    className={`${listActionClassName} border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50`}
+                  >
+                    Xem
+                  </button>
+                  <Link
+                    to={buildPromotionLink(job)}
+                    className={`${listActionClassName} border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100`}
+                  >
+                    Đẩy tin
+                  </Link>
+                </div>
               </article>
             )
           })}
@@ -428,6 +455,12 @@ export default function AdminJobs() {
                   Chặn tin
                 </button>
               </div>
+              <Link
+                to={buildPromotionLink(selectedJob)}
+                className="mt-2 flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 px-3 text-[12px] font-extrabold text-indigo-700 transition hover:bg-indigo-100"
+              >
+                Quản lý đẩy tin của tin này
+              </Link>
             </div>
           ) : (
             <div className="flex min-h-[420px] items-center justify-center p-6 text-center">

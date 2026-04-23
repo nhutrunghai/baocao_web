@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import AdminLayout from '../../components/AdminLayout.jsx'
 import Toast from '../../components/Toast.jsx'
 import { getAdminUserDetail, getAdminUsers, updateAdminUserStatus } from '../../api/adminService.js'
@@ -333,6 +334,20 @@ export default function AdminUsers() {
                 <p className="mt-2 text-[11px] font-medium leading-5 text-slate-400">
                   API hiện chỉ cho phép chuyển trạng thái giữa đang hoạt động và đã khóa. Trạng thái đã xóa chỉ hiển thị để theo dõi.
                 </p>
+                <Link
+                  to="/admin/wallet-transactions"
+                  state={{
+                    userPreview: {
+                      _id: selectedUser._id,
+                      fullName: selectedUser.fullName,
+                      username: selectedUser.username,
+                      email: selectedUser.email,
+                    },
+                  }}
+                  className="mt-3 flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 px-3 text-[12px] font-extrabold text-indigo-700 transition hover:bg-indigo-100"
+                >
+                  Cộng hoặc trừ tiền cho user này
+                </Link>
               </div>
             </div>
           ) : (

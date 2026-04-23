@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Toast from '../../components/Toast.jsx'
 import DashboardSidebar from '../../components/DashboardSidebar.jsx'
-import { createCompanyJob, getCompanyJob, updateCompanyJob } from '../../api/companyService.js'
+import { createCompanyJob, getCompanyJob, getCompanyPromotionPlans, updateCompanyJob } from '../../api/companyService.js'
 import { loadHardcodedMock } from '../../data/hardcodedClient.js'
 
 const jobTypeOptions = [
@@ -29,7 +29,7 @@ const defaultSteps = [
   { id: 3, label: 'Xem trước và đăng' },
 ]
 
-const defaultPackageOptions = ['Gói thường', 'Gói nổi bật']
+const defaultPackageOptions = ['Đăng thường', 'Đẩy tin nổi bật']
 
 const emptyForm = {
   title: '',
@@ -274,7 +274,20 @@ export default function EmployerRecruitmentDashboard() {
     const loadData = async () => {
       const mock = await loadHardcodedMock().catch(() => null)
       const recruitment = mock?.employerRecruitment || {}
-      const nextPackageOptions = recruitment.options?.packageOptions?.length ? recruitment.options.packageOptions : defaultPackageOptions
+      const plansResponse = await getCompanyPromotionPlans().catch(() => ({ plans: [] }))
+      const planOptions = Array.isArray(plansResponse?.plans)
+        ? plansResponse.plans.map((plan) => {
+            const typeLabel = plan.type === 'homepage_featured' ? 'Đẩy tin nổi bật' : plan.name || 'Đẩy tin'
+            const dailyPrice = Number(plan.daily_price || 0).toLocaleString('vi-VN')
+            return `${typeLabel} • ${dailyPrice} ${plan.currency || 'VND'}/ngày`
+          })
+        : []
+      const nextPackageOptions =
+        planOptions.length
+          ? planOptions
+          : recruitment.options?.packageOptions?.length
+            ? recruitment.options.packageOptions
+            : defaultPackageOptions
       const nextSteps = recruitment.steps?.length ? recruitment.steps : defaultSteps
 
       if (!active) return

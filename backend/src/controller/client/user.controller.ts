@@ -2,8 +2,8 @@ import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import UserMessages from '~/constants/messages'
 import { AppError } from '~/models/appError'
-import { GetUserRqType, newPasswordRqType } from '~/models/requests/requestsType'
-import userService from '~/services/users.service'
+import { GetUserRqType, newPasswordRqType, UpdateUserAvatarRqType } from '~/models/requests/requestsType'
+import userService from '~/services/client/users.service'
 import { ObjectId } from 'mongodb'
 import env from '~/configs/env.config'
 import { OtpType, TemplateResendId } from '~/constants/enum'
@@ -12,7 +12,7 @@ import ms, { StringValue } from 'ms'
 import databaseService from '~/configs/database.config'
 import resendProvider from '~/providers/resend.provider'
 import { UserLocals } from '~/models/requests/responseType'
-import User from '~/models/schema/user.schema'
+import User from '~/models/schema/client/user.schema'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { hashPassword } from '~/utils/crypto.utils'
 export const getProfileMeController = async (req: Request, res: Response) => {
@@ -38,6 +38,13 @@ export const updateProfileUserController = async (req: Request, res: Response) =
   return res.status(StatusCodes.OK).json({
     status: 'success',
     message: UserMessages.USER_UPDATE_SUCCESS
+  })
+}
+export const updateUserAvatarController = async (req: Request<ParamsDictionary, any, UpdateUserAvatarRqType>, res: Response) => {
+  await userService.updateAvatar(req.decodeToken?.userId as string, req.body)
+  return res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'Cập nhật avatar thành công'
   })
 }
 export const getSettingUserController = async (req: Request, res: Response) => {
@@ -73,7 +80,7 @@ export const resendMailController = async (req: Request, res: Response<any, User
     to: res.locals.user.email,
     variables: {
       fullName: res.locals.user.fullName,
-      verify_url: `${env.MAIL_FROM_ADDRESS}/verify-email?email_verify_token=${rawToken}`
+      verify_url: `${env.FRONTEND_URL}/verify-email?email_verify_token=${rawToken}`
     }
   }
   if (env.BUILD_MODE === 'production') {
@@ -125,3 +132,4 @@ export const newPasswordController = async (req: Request<ParamsDictionary, any, 
     message: UserMessages.FORGOT_PASSWORD_SUCCESS
   })
 }
+

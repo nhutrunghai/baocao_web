@@ -171,7 +171,7 @@ body {
 .auth-input {
   width: 100%;
   border: 1px solid rgba(148, 163, 184, 0.38);
-  border-radius: 16px;
+  border-radius: 16px !important;
   background: rgba(255, 255, 255, 1);
   padding: 0.9rem 1rem;
   color: #0f172a;
@@ -194,13 +194,80 @@ body {
 }
 
 .auth-input-compact {
-  border-radius: 999px;
+  border-radius: 999px !important;
   background: rgba(255, 255, 255, 1);
   padding: 0.68rem 0.95rem;
   font-size: 13px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
     0 10px 24px -20px rgba(15, 23, 42, 0.35);
+}
+
+input.auth-input,
+textarea.auth-input,
+select.auth-input {
+  border-radius: 16px !important;
+  font-family: 'Manrope', sans-serif !important;
+}
+
+input.auth-input.auth-input-compact,
+textarea.auth-input.auth-input-compact,
+select.auth-input.auth-input-compact {
+  border-radius: 999px !important;
+}
+
+.auth-panel {
+  border-radius: 22px;
+}
+
+.auth-stat-card {
+  border-radius: 22px;
+}
+
+.auth-pill {
+  border-radius: 999px;
+}
+
+.auth-note {
+  border-radius: 16px;
+}
+
+.auth-submit-btn {
+  border-radius: 999px;
+}
+
+.auth-helper-card {
+  border-radius: 16px;
+}
+
+.wallet-top-up,
+.wallet-top-up input,
+.wallet-top-up button,
+.wallet-top-up textarea,
+.wallet-top-up select {
+  font-family: 'Manrope', sans-serif !important;
+}
+
+.wallet-amount-control {
+  border-radius: 16px !important;
+}
+
+.wallet-amount-input {
+  appearance: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: 'Manrope', sans-serif !important;
+  line-height: 1.5 !important;
+  padding: 0 !important;
+}
+
+.wallet-amount-input:focus {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }
 
 @keyframes fadeUp {

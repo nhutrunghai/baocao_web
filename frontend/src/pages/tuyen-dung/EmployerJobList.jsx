@@ -3,7 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Toast from '../../components/Toast.jsx'
 import DashboardSidebar from '../../components/DashboardSidebar.jsx'
 import EmployerSectionTabs from '../../components/EmployerSectionTabs.jsx'
-import { getCompanyJob } from '../../api/companyService.js'
+import {
+  getCompanyJob,
+  getCompanyJobPromotions,
+  getCompanyPromotionPlans,
+  purchaseCompanyJobPromotion,
+} from '../../api/companyService.js'
 import { loadEmployerJobApplications, loadEmployerJobsList, updateEmployerJobStatus } from '../../data/apiClient.js'
 import { formatDate, statusOptions } from './employerData.js'
 
@@ -93,6 +98,19 @@ function formatCompactTime(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Chưa có cập nhật'
   return date.toLocaleDateString('vi-VN')
+}
+
+function formatMoney(value, currency = 'VND') {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: currency === 'VND' ? 0 : 2,
+  }).format(Number(value || 0))
+}
+
+function mapPromotionTypeLabel(value) {
+  if (value === 'homepage_featured') return 'Nổi bật trang chủ'
+  return value || 'Đẩy tin'
 }
 
 function buildStatCards({ jobs, pagination }) {
@@ -189,12 +207,158 @@ function JobActionButton({ icon, label, className, ...props }) {
   return (
     <button
       type="button"
-      className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition ${className}`}
+      className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-semibold whitespace-nowrap transition ${className}`}
       {...props}
     >
-      <span className="material-symbols-outlined text-[16px]">{icon}</span>
+      <span className="material-symbols-outlined text-[15px]">{icon}</span>
       <span>{label}</span>
     </button>
+  )
+}
+
+function PromotionPurchaseModal({ job, plans, isLoadingPlans, submitting, onClose, onSubmit }) {
+  const [selectedType, setSelectedType] = useState(plans[0]?.type || 'homepage_featured')
+  const [durationDays, setDurationDays] = useState('7')
+  const [priority, setPriority] = useState('')
+
+  useEffect(() => {
+    setSelectedType(plans[0]?.type || 'homepage_featured')
+  }, [plans])
+
+  if (!job) return null
+
+  const selectedPlan = plans.find((plan) => plan.type === selectedType) || plans[0] || null
+  const minDays = Number(selectedPlan?.min_duration_days || 1)
+  const maxDays = Number(selectedPlan?.max_duration_days || 90)
+  const dailyPrice = Number(selectedPlan?.daily_price || 0)
+  const totalAmount = Math.max(minDays, Number(durationDays || minDays)) * dailyPrice
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-[2px]">
+      <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_30px_80px_-40px_rgba(15,23,42,0.45)]">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Mua đẩy tin</p>
+            <h3 className="mt-1 text-xl font-extrabold tracking-tight text-slate-900">{job.title}</h3>
+            <p className="mt-1 text-sm text-slate-500">{job.location || 'Chưa có địa điểm'} • {job.level || 'Chưa có cấp bậc'}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 px-5 py-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault()
+              onSubmit({
+                type: selectedType,
+                duration_days: Number(durationDays || minDays),
+                priority: priority === '' ? undefined : Number(priority),
+              })
+            }}
+          >
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-slate-700">Gói đẩy tin</span>
+              <select
+                value={selectedType}
+                onChange={(event) => setSelectedType(event.target.value)}
+                disabled={isLoadingPlans || submitting}
+                className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-[15px] font-semibold outline-none transition focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              >
+                {plans.map((plan) => (
+                  <option key={plan.type} value={plan.type}>
+                    {mapPromotionTypeLabel(plan.type)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">Số ngày đẩy tin</span>
+                <input
+                  type="number"
+                  min={minDays}
+                  max={maxDays}
+                  value={durationDays}
+                  onChange={(event) => setDurationDays(event.target.value)}
+                  disabled={isLoadingPlans || submitting}
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-[15px] font-semibold outline-none transition focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-700">Độ ưu tiên</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={priority}
+                  onChange={(event) => setPriority(event.target.value)}
+                  disabled={isLoadingPlans || submitting}
+                  placeholder={String(selectedPlan?.default_priority ?? 0)}
+                  className="h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-[15px] font-semibold outline-none transition focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                />
+              </label>
+            </div>
+
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+              Số tiền sẽ trừ trực tiếp từ ví của tài khoản employer sau khi mua thành công.
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                disabled={isLoadingPlans || !selectedPlan || submitting}
+                className="inline-flex h-11 flex-1 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submitting ? 'Đang xử lý...' : 'Xác nhận mua'}
+              </button>
+            </div>
+          </form>
+
+          <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h4 className="text-base font-bold text-slate-900">Tóm tắt gói mua</h4>
+            {isLoadingPlans ? (
+              <p className="mt-3 text-sm font-medium text-slate-500">Đang tải bảng giá...</p>
+            ) : selectedPlan ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Loại gói</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{mapPromotionTypeLabel(selectedPlan.type)}</p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Đơn giá mỗi ngày</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{formatMoney(selectedPlan.daily_price, selectedPlan.currency)}</p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">Thời lượng hợp lệ</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{selectedPlan.min_duration_days} - {selectedPlan.max_duration_days} ngày</p>
+                </div>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700">Tổng thanh toán</p>
+                  <p className="mt-1 text-lg font-extrabold text-emerald-700">{formatMoney(totalAmount, selectedPlan.currency)}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="mt-3 text-sm font-medium text-slate-500">Chưa có plan khả dụng.</p>
+            )}
+          </aside>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -330,6 +494,11 @@ export default function EmployerJobList() {
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
   const [reasonModal, setReasonModal] = useState({ open: false, jobTitle: '', reason: '', loading: false })
+  const [promotionPlans, setPromotionPlans] = useState([])
+  const [plansLoading, setPlansLoading] = useState(true)
+  const [activePromotionsByJobId, setActivePromotionsByJobId] = useState({})
+  const [promotionModalJob, setPromotionModalJob] = useState(null)
+  const [promotionSubmitting, setPromotionSubmitting] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -364,7 +533,7 @@ export default function EmployerJobList() {
   }, [currentPage, keyword, pageSize, status])
 
   useEffect(() => {
-    setHighlightId(location.state?.createdJobId ?? location.state?.updatedJobId ?? null)
+    setHighlightId(location.state?.createdJobId ?? location.state?.updatedJobId ?? location.state?.focusJobId ?? null)
   }, [location.state])
 
   useEffect(() => {
@@ -384,6 +553,52 @@ export default function EmployerJobList() {
     return () => window.clearTimeout(timeoutId)
   }, [highlightId])
 
+  useEffect(() => {
+    let active = true
+
+    getCompanyPromotionPlans()
+      .then((data) => {
+        if (active) setPromotionPlans(Array.isArray(data?.plans) ? data.plans : [])
+      })
+      .catch(() => {
+        if (active) setPromotionPlans([])
+      })
+      .finally(() => {
+        if (active) setPlansLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    getCompanyJobPromotions({
+      status: 'active',
+      page: 1,
+      limit: 100,
+    })
+      .then((data) => {
+        if (!active) return
+        const nextMap = {}
+        ;(data.items || []).forEach((item) => {
+          if (item?.job_id) {
+            nextMap[item.job_id] = item
+          }
+        })
+        setActivePromotionsByJobId(nextMap)
+      })
+      .catch(() => {
+        if (active) setActivePromotionsByJobId({})
+      })
+
+    return () => {
+      active = false
+    }
+  }, [jobs])
+
   const currentJobs = jobs
   const statCards = useMemo(() => buildStatCards({ jobs, pagination }), [jobs, pagination])
   const totalJobs = Number(pagination.total || 0)
@@ -402,6 +617,41 @@ export default function EmployerJobList() {
 
   const handleEditJob = (job) => {
     navigate('/employer-post-job', { state: { editJobId: job.backendId || job.id } })
+  }
+
+  const handleOpenPromotionPurchase = (job) => {
+    setPromotionModalJob(job)
+  }
+
+  const handleSubmitPromotionPurchase = async (payload) => {
+    if (!promotionModalJob?.backendId) return
+
+    setPromotionSubmitting(true)
+    try {
+      const result = await purchaseCompanyJobPromotion(promotionModalJob.backendId, payload)
+      const promotion = result?.promotion
+
+      if (promotion?.job_id) {
+        setActivePromotionsByJobId((current) => ({
+          ...current,
+          [promotion.job_id]: promotion,
+        }))
+      }
+
+      setPromotionModalJob(null)
+      setToast({
+        type: 'success',
+        message: `Đã mua đẩy tin cho job "${promotionModalJob.title}".`,
+      })
+
+      if (promotion?._id) {
+        navigate(`/employer-job-promotions/${promotion._id}`)
+      }
+    } catch (error) {
+      setToast({ type: 'error', message: error.message || 'Không thể mua đẩy tin cho job.' })
+    } finally {
+      setPromotionSubmitting(false)
+    }
   }
 
   const handleJobStatusChange = async (job, nextStatus) => {
@@ -526,6 +776,14 @@ export default function EmployerJobList() {
         reason={reasonModal.reason}
         isLoading={reasonModal.loading}
         onClose={() => setReasonModal({ open: false, jobTitle: '', reason: '', loading: false })}
+      />
+      <PromotionPurchaseModal
+        job={promotionModalJob}
+        plans={promotionPlans}
+        isLoadingPlans={plansLoading}
+        submitting={promotionSubmitting}
+        onClose={() => setPromotionModalJob(null)}
+        onSubmit={handleSubmitPromotionPurchase}
       />
 
       <main className="min-h-screen bg-[#F9FAFB] lg:ml-64">
@@ -669,6 +927,7 @@ export default function EmployerJobList() {
             {currentJobs.map((job) => {
               const isNew = highlightId === job.id
               const moderationState = getJobModerationState(job)
+              const activePromotion = activePromotionsByJobId[job.backendId || job.id]
 
               return (
                 <article
@@ -690,6 +949,11 @@ export default function EmployerJobList() {
                             {isNew && (
                               <span className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-blue-700">
                                 Mới
+                              </span>
+                            )}
+                            {activePromotion && (
+                              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-emerald-700">
+                                Đang được đẩy tin
                               </span>
                             )}
                           </div>
@@ -764,24 +1028,36 @@ export default function EmployerJobList() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto lg:min-w-[360px]">
+                          <div className="grid grid-cols-2 gap-2 lg:flex lg:min-w-[520px] lg:flex-nowrap">
                             <JobActionButton
                               icon="groups"
                               label="Danh sách hồ sơ"
                               onClick={() => handleOpenPreview(job)}
-                              className="border-blue-100 bg-blue-50 text-blue-700 hover:border-blue-200 hover:bg-blue-100"
+                              className="border-blue-100 bg-blue-50 text-blue-700 hover:border-blue-200 hover:bg-blue-100 lg:flex-1"
                             />
                             <JobActionButton
                               icon="edit"
                               label="Chỉnh sửa"
                               onClick={() => handleEditJob(job)}
-                              className="border-amber-100 bg-amber-50 text-amber-700 hover:border-amber-200 hover:bg-amber-100"
+                              className="border-amber-100 bg-amber-50 text-amber-700 hover:border-amber-200 hover:bg-amber-100 lg:flex-1"
+                            />
+                            <JobActionButton
+                              icon={activePromotion ? 'rocket_launch' : 'local_fire_department'}
+                              label={activePromotion ? 'Xem đẩy tin' : 'Mua đẩy tin'}
+                              onClick={() => {
+                                if (activePromotion?._id) {
+                                  navigate(`/employer-job-promotions/${activePromotion._id}`)
+                                  return
+                                }
+                                handleOpenPromotionPurchase(job)
+                              }}
+                              className="border-violet-100 bg-violet-50 text-violet-700 hover:border-violet-200 hover:bg-violet-100 lg:flex-1"
                             />
                             <JobActionButton
                               icon="delete"
                               label="Xóa"
                               onClick={() => handleDeleteJob(job)}
-                              className="border-rose-100 bg-rose-50 text-rose-700 hover:border-rose-200 hover:bg-rose-100"
+                              className="border-rose-100 bg-rose-50 text-rose-700 hover:border-rose-200 hover:bg-rose-100 lg:flex-1"
                             />
                           </div>
                         </div>
@@ -800,6 +1076,12 @@ export default function EmployerJobList() {
                             Quyền hiển thị đang bị admin khóa. Các nút dưới đây chỉ đổi trạng thái tuyển dụng nội bộ.
                           </div>
                         )}
+
+                        {activePromotion ? (
+                          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-semibold leading-4 text-emerald-700">
+                            Gói {mapPromotionTypeLabel(activePromotion.type)} đang chạy đến {formatDate(activePromotion.ends_at)}.
+                          </div>
+                        ) : null}
 
                         <div className="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
                           {editableJobStatuses.map((item) => {

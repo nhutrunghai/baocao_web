@@ -32,6 +32,8 @@ export default function JobDetail() {
   const navigate = useNavigate()
   const [jobs, setJobs] = useState([])
   const [job, setJob] = useState(null)
+  const [isLoadingJob, setIsLoadingJob] = useState(true)
+  const [jobLoadError, setJobLoadError] = useState('')
   const [userProfile, setUserProfile] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(getAccessToken() || getRefreshToken()))
@@ -57,12 +59,40 @@ export default function JobDetail() {
   })
 
   useEffect(() => {
+    let active = true
+
     const loadJobs = async () => {
-      const [jobData, otherJobs] = await Promise.all([loadJobDetail(id), loadOtherJobDetails(id)])
-      setJob(jobData)
-      setJobs(jobData ? [jobData, ...(otherJobs || [])] : otherJobs || [])
+      setIsLoadingJob(true)
+      setJobLoadError('')
+
+      try {
+        const [jobData, otherJobs] = await Promise.all([loadJobDetail(id), loadOtherJobDetails(id)])
+        if (!active) return
+
+        if (!jobData) {
+          setJob(null)
+          setJobs(otherJobs || [])
+          setJobLoadError('Không thể tải chi tiết công việc này hoặc tin đã không còn tồn tại.')
+          return
+        }
+
+        setJob(jobData)
+        setJobs([jobData, ...(otherJobs || [])])
+      } catch (error) {
+        if (!active) return
+        setJob(null)
+        setJobs([])
+        setJobLoadError(error?.message || 'Không thể tải chi tiết công việc lúc này.')
+      } finally {
+        if (active) setIsLoadingJob(false)
+      }
     }
+
     loadJobs()
+
+    return () => {
+      active = false
+    }
   }, [id])
 
   useEffect(() => {
@@ -211,8 +241,40 @@ export default function JobDetail() {
     }
   }
 
-  if (!job) {
+  if (isLoadingJob) {
     return <div className="min-h-screen bg-[#f3f7fb] p-10 text-center text-slate-600">Đang tải dữ liệu công việc...</div>
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-[#f3f7fb] px-4 py-16 text-slate-900">
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        <div className="mx-auto max-w-[720px] rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-[0_24px_60px_-45px_rgba(15,23,42,0.4)] sm:p-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+            <span className="material-symbols-outlined text-[28px]">error</span>
+          </div>
+          <h1 className="mt-4 text-[22px] font-black text-slate-950">Không mở được chi tiết công việc</h1>
+          <p className="mt-2 text-[14px] leading-6 text-slate-600">
+            {jobLoadError || 'Đã có lỗi khi tải thông tin công việc. Vui lòng thử lại từ danh sách job.'}
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              Quay lại
+            </button>
+            <Link
+              to="/search-jobs"
+              className="rounded-xl bg-[#007bff] px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+            >
+              Đến trang tìm việc
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

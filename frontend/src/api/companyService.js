@@ -54,6 +54,40 @@ export async function getCompanyJobs(params = {}) {
   }
 }
 
+export async function getCompanyPromotionPlans() {
+  const response = await apiClient.get('/company/job-promotions/plans', { auth: true })
+  return response.data?.data || { plans: [] }
+}
+
+export async function purchaseCompanyJobPromotion(jobId, payload) {
+  const response = await apiClient.post(`/company/jobs/${encodeURIComponent(jobId)}/promotions/purchase`, payload, { auth: true })
+  return response.data?.data || {}
+}
+
+export async function getCompanyJobPromotions(params = {}) {
+  const response = await apiClient.get('/company/job-promotions', { auth: true, params })
+  const data = response.data?.data || {}
+  return {
+    items: data.promotions || [],
+    pagination: data.pagination || {
+      page: Number(params.page) || 1,
+      limit: Number(params.limit) || 10,
+      total: 0,
+      total_pages: 1,
+    },
+  }
+}
+
+export async function getCompanyJobPromotionDetail(promotionId) {
+  const response = await apiClient.get(`/company/job-promotions/${encodeURIComponent(promotionId)}`, { auth: true })
+  return response.data?.data?.promotion || response.data?.promotion || null
+}
+
+export async function cancelCompanyJobPromotion(promotionId) {
+  const response = await apiClient.patch(`/company/job-promotions/${encodeURIComponent(promotionId)}/cancel`, {}, { auth: true })
+  return response.data?.data?.promotion || response.data?.promotion || null
+}
+
 export async function getCompanyJobApplications(jobId, status, page = 1, limit = 20) {
   const response = await apiClient.get(`/company/jobs/${encodeURIComponent(jobId)}/applications`, {
     auth: true,

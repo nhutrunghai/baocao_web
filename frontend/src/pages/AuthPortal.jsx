@@ -271,7 +271,7 @@ function AuthPortal({ mode }) {
               {trustStats.map((item) => (
                 <article
                   key={item.label}
-                  className="rounded-[22px] border border-white/80 bg-white/80 px-4 py-3 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.55)] backdrop-blur"
+                  className="auth-stat-card border border-white/80 bg-white/80 px-4 py-3 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.55)] backdrop-blur"
                 >
                   <p className="text-xl font-black text-slate-950">{item.value}</p>
                   <p className="text-sm text-slate-500">{item.label}</p>
@@ -287,10 +287,10 @@ function AuthPortal({ mode }) {
           </section>
 
           <section className="relative order-2 mx-auto w-full max-w-[388px] lg:order-none lg:mx-0 lg:justify-self-end lg:-translate-x-12">
-            <div className="rounded-[22px] border border-white/90 bg-white/96 p-5 shadow-[0_35px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-md">
+            <div className="auth-panel border border-white/90 bg-white/96 p-5 shadow-[0_35px_70px_-35px_rgba(15,23,42,0.55)] backdrop-blur-md">
               <div className="mb-4 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">{content.label}</span>
-                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-sky-800 shadow-sm">
+                <span className="auth-pill bg-white px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-sky-800 shadow-sm">
                   {location.pathname.replace('/', '') || 'home'}
                 </span>
               </div>
@@ -312,7 +312,7 @@ function AuthPortal({ mode }) {
                 )}
 
                 {isForgot && (
-                  <div className="rounded-2xl border border-sky-100 bg-white px-3 py-2 text-xs font-semibold leading-5 text-sky-900 shadow-sm">
+                  <div className="auth-note border border-sky-100 bg-white px-3 py-2 text-xs font-semibold leading-5 text-sky-900 shadow-sm">
                     Chúng tôi sẽ gửi một liên kết đặt lại mật khẩu đến email bạn vừa nhập.
                   </div>
                 )}
@@ -337,7 +337,7 @@ function AuthPortal({ mode }) {
                 )}
 
                 {isReset && (
-                  <div className="rounded-2xl border border-sky-100 bg-white px-3 py-2 text-xs font-semibold leading-5 text-sky-900 shadow-sm">
+                  <div className="auth-note border border-sky-100 bg-white px-3 py-2 text-xs font-semibold leading-5 text-sky-900 shadow-sm">
                     {forgotPasswordToken
                       ? 'Mật khẩu mới nên có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.'
                       : 'Vui lòng mở trang này từ liên kết đặt lại mật khẩu trong email để có token hợp lệ.'}
@@ -347,7 +347,7 @@ function AuthPortal({ mode }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-full bg-[#30353b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="auth-submit-btn w-full bg-[#30353b] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   {isSubmitting
                     ? isForgot
@@ -361,7 +361,7 @@ function AuthPortal({ mode }) {
                 </button>
               </form>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-[13px] text-slate-700 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.4)]">
+              <div className="auth-helper-card mt-4 border border-slate-200 bg-white px-4 py-4 text-[13px] text-slate-700 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.4)]">
                 <p>
                   {content.helper}{' '}
                   <Link to={content.helperTo} className="font-black text-slate-950 transition hover:text-sky-800">

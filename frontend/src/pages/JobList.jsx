@@ -62,8 +62,8 @@ export default function JobList() {
     setError('')
     try {
       const [jobsData, statsData] = await Promise.all([
-        loadAppliedJobs({ status, page: 1, limit: 100 }),
-        loadAppliedJobStats(),
+        loadAppliedJobs({ status, page: 1, limit: 100 }).catch(() => []),
+        loadAppliedJobStats().catch(() => ({ total: 0, pending: 0, accepted: 0, successRate: '0%' })),
       ])
       setJobs(jobsData || [])
       setStats(statsData)
